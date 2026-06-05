@@ -1,0 +1,42 @@
+name: Automate Data Preprocessing
+
+on:
+  push:
+    paths:
+      - 'credit_card_fraud_raw/**'
+      - 'preprocessing/automate_Florenza.py'
+  workflow_dispatch:
+
+jobs:
+  run-preprocessing:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install Dependencies
+        run: |
+          pip install pandas
+
+      - name: Execute Preprocessing Script
+        run: |
+          cd preprocessing
+          python automate_Florenza.py
+
+      - name: Commit and Push Processed Data
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          
+          git add preprocessing/clean_dataset.csv
+          
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Auto-update clean_dataset.csv" && git push)
